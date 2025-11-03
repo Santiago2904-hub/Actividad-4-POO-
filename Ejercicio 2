@@ -1,0 +1,78 @@
+import tkinter as tk
+from tkinter import messagebox
+from dataclasses import dataclass
+
+# --- Clase Vendedor ---
+@dataclass
+class Vendedor:
+    nombre: str
+    apellidos: str
+    edad: int
+
+    def __post_init__(self):
+        """Verifica la edad inmediatamente al crear el objeto."""
+        self.verificar_edad(self.edad)
+
+    @staticmethod
+    def verificar_edad(edad):
+        """Lanza excepciones según las reglas establecidas."""
+        if edad < 0 or edad > 120:
+            raise ValueError("La edad no puede ser negativa ni mayor a 120")
+        if edad < 18:
+            raise ValueError("El vendedor debe ser mayor de 18 años")
+
+    def imprimir(self):
+        """Devuelve los datos del vendedor."""
+        return f"Nombre: {self.nombre}\nApellidos: {self.apellidos}\nEdad: {self.edad}"
+
+
+# --- Interfaz gráfica con tkinter ---
+class VentanaVendedor:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Registro de Vendedor")
+        self.root.geometry("420x320")
+        self.root.configure(bg="#eef2f3")
+
+        # Etiquetas y campos de texto
+        tk.Label(root, text="Nombre:", bg="#eef2f3", font=("Arial", 11)).pack(pady=5)
+        self.entry_nombre = tk.Entry(root, font=("Arial", 11))
+        self.entry_nombre.pack()
+
+        tk.Label(root, text="Apellidos:", bg="#eef2f3", font=("Arial", 11)).pack(pady=5)
+        self.entry_apellidos = tk.Entry(root, font=("Arial", 11))
+        self.entry_apellidos.pack()
+
+        tk.Label(root, text="Edad:", bg="#eef2f3", font=("Arial", 11)).pack(pady=5)
+        self.entry_edad = tk.Entry(root, font=("Arial", 11))
+        self.entry_edad.pack()
+
+        # Botón para registrar vendedor
+        tk.Button(root, text="Registrar Vendedor", command=self.registrar_vendedor,
+                  bg="#4CAF50", fg="white", font=("Arial", 11), width=25).pack(pady=20)
+
+        tk.Button(root, text="Salir", command=root.destroy, bg="#f44336", fg="white",
+                  font=("Arial", 11), width=25).pack(pady=10)
+
+    def registrar_vendedor(self):
+        """Verifica y crea el objeto vendedor."""
+        nombre = self.entry_nombre.get()
+        apellidos = self.entry_apellidos.get()
+
+        try:
+            edad = int(self.entry_edad.get())
+            vendedor = Vendedor(nombre, apellidos, edad)
+            messagebox.showinfo("Registro exitoso", vendedor.imprimir())
+        except ValueError as e:
+            messagebox.showerror("Error de validación", str(e))
+        except Exception as e:
+            messagebox.showerror("Error inesperado", str(e))
+        finally:
+            print("Intento de registro finalizado.")
+
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = VentanaVendedor(root)
+    root.mainloop()
