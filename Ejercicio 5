@@ -1,0 +1,84 @@
+import tkinter as tk
+from tkinter import filedialog
+from tkinter import scrolledtext
+from tkinter import messagebox
+import os
+import io
+
+class LectorArchivosApp(tk.Tk):
+   
+    def __init__(self):
+        super().__init__()
+        self.title("Lector de Archivos de Texto (Python)")
+        self.geometry("600x400")
+        
+        self.crear_widgets()
+
+    def crear_widgets(self):
+        # Frame principal para los controles
+        control_frame = tk.Frame(self, padx=10, pady=10)
+        control_frame.pack(fill="x")
+
+        # Botón para abrir el archivo
+        self.btn_abrir = tk.Button(control_frame, text="Abrir Archivo (.txt)", command=self.abrir_archivo, bg="#4CAF50", fg="white")
+        self.btn_abrir.pack(side=tk.LEFT, padx=5)
+
+        # Etiqueta para mostrar la ruta del archivo
+        self.ruta_var = tk.StringVar()
+        self.ruta_var.set("Ningún archivo seleccionado.")
+        tk.Label(control_frame, textvariable=self.ruta_var, anchor="w").pack(side=tk.LEFT, padx=10)
+
+        
+        tk.Label(self, text="Contenido del Archivo:", anchor="w").pack(fill="x", padx=10, pady=(0, 5))
+        
+        self.area_texto = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=80, height=20)
+        self.area_texto.pack(padx=10, pady=10, fill="both", expand=True)
+
+    def abrir_archivo(self):
+        """
+        Abre el diálogo para seleccionar un archivo, lo lee y muestra su contenido.
+        Implementa el manejo de excepciones.
+        """
+        # Abre el diálogo para seleccionar archivos .txt
+        ruta_archivo = filedialog.askopenfilename(
+            defaultextension=".txt",
+            filetypes=[("Archivos de Texto", "*.txt"), ("Todos los archivos", "*.*")]
+        )
+
+        if not ruta_archivo:
+            
+            return
+
+        self.ruta_var.set(os.path.basename(ruta_archivo))
+        self.area_texto.delete(1.0, tk.END) 
+
+       
+        try:
+           
+            with io.open(ruta_archivo, 'r', encoding='utf-8') as archivo:
+                
+                contenido = archivo.read()
+                
+               
+                self.area_texto.insert(tk.INSERT, contenido)
+            
+            messagebox.showinfo("Éxito", f"Archivo leído correctamente: {os.path.basename(ruta_archivo)}")
+
+
+            self.area_texto.insert(tk.INSERT, "¡ERROR! El archivo especificado no fue encontrado.")
+            messagebox.showerror("Error de E/S", "No se pudo encontrar el archivo.")
+            self.ruta_var.set("Archivo no encontrado.")
+            
+        except PermissionError:
+            self.area_texto.insert(tk.INSERT, "¡ERROR! Permiso denegado para leer el archivo.")
+            messagebox.showerror("Error de E/S", "Permiso denegado para leer el archivo.")
+            
+        except Exception as e:
+            
+            self.area_texto.insert(tk.INSERT, f"¡ERROR! Ocurrió un error inesperado durante la lectura:\n{e}")
+            messagebox.showerror("Error de Lectura", f"No se pudo leer el archivo. Error: {e}")
+            
+
+if __name__ == "__main__":
+    app = LectorArchivosApp()
+    app.mainloop()
