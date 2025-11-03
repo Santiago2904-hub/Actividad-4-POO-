@@ -1,0 +1,72 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class ManejoExcepcionesApp:
+    
+   
+    
+    def __init__(self, master):
+        self.master = master
+        master.title("Calculadora de Excepciones")
+        master.geometry("350x250")
+
+        # 1. Etiquetas y Entradas
+        tk.Label(master, text="Numerador (X):").grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        self.entry_numerador = tk.Entry(master, width=15)
+        self.entry_numerador.grid(row=0, column=1, padx=10, pady=10)
+
+        tk.Label(master, text="Denominador (Y):").grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        self.entry_denominador = tk.Entry(master, width=15)
+        self.entry_denominador.grid(row=1, column=1, padx=10, pady=10)
+
+        # 2. Botón de Ejecución
+        self.btn_calcular = tk.Button(master, text="Calcular X / Y", command=self.calcular_division)
+        self.btn_calcular.grid(row=2, column=0, columnspan=2, pady=15)
+
+        # 3. Área de Resultado
+        tk.Label(master, text="Resultado:").grid(row=3, column=0, padx=10, pady=5, sticky="w")
+        self.resultado_var = tk.StringVar()
+        self.resultado_label = tk.Label(master, textvariable=self.resultado_var, fg="blue")
+        self.resultado_label.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+        self.resultado_var.set("Esperando...")
+
+    def calcular_division(self):
+        """
+        Método que intenta realizar la división y maneja las posibles excepciones.
+        """
+        numerador_str = self.entry_numerador.get()
+        denominador_str = self.entry_denominador.get()
+
+        
+        try:
+            
+            x = float(numerador_str)
+            y = float(denominador_str)
+
+            
+            cociente = x / y
+            
+            
+            self.resultado_var.set(f"{cociente:.2f}")
+            messagebox.showinfo("Éxito", "Cálculo realizado correctamente.")
+
+       
+        except ZeroDivisionError:
+            self.resultado_var.set("ERROR: Div/0")
+            messagebox.showerror("Error de Ejecución", "¡División por cero no permitida!")
+
+        
+        except ValueError:
+            self.resultado_var.set("ERROR: Formato")
+            messagebox.showerror("Error de Ejecución", "¡Entrada inválida! Asegúrate de ingresar solo números.")
+            
+        
+        except Exception as e:
+            self.resultado_var.set("ERROR: General")
+            messagebox.showerror("Error General", f"Ocurrió un error inesperado: {e}")
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = ManejoExcepcionesApp(root)
+    root.mainloop()
