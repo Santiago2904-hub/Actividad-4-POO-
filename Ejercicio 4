@@ -1,0 +1,178 @@
+import tkinter as tk
+from tkinter import messagebox
+
+
+class Programador:
+    """Modela un integrante del equipo con nombre y apellidos."""
+    def __init__(self, nombre, apellidos):
+        self.nombre = nombre
+        self.apellidos = apellidos
+
+class EquipoMaratonProgramacion:
+    """Modela el equipo con validaciones y manejo de excepciones."""
+    MAX_TAMANO = 3 
+    MIN_TAMANO = 2 
+
+    def __init__(self, nombre_equipo, universidad, lenguaje_programacion):
+        self.nombreEquipo = nombre_equipo
+        self.universidad = universidad
+        self.lenguajeProgramacion = lenguaje_programacion
+        self.programadores = []
+        self.tamañoEquipo = 0
+
+    def estáLleno(self):
+        """Determina si el equipo ha alcanzado el tamaño máximo."""
+        return self.tamañoEquipo == self.MAX_TAMANO
+
+    def añadir(self, programador):
+        """
+        Añade un programador. Lanza una excepción si el equipo está lleno.
+        """
+        if self.estáLleno():
+           
+            raise Exception(f"El equipo está completo (Máx: {self.MAX_TAMANO}). No se pudo agregar programador.")
+        
+        self.programadores.append(programador)
+        self.tamañoEquipo += 1
+
+    @staticmethod
+    def validarCampo(campo):
+       
+        # 1. Validar longitud
+        if len(campo) > 20:
+            raise Exception(f"La longitud no debe ser superior a 20 caracteres (Actual: {len(campo)}).")
+        
+        
+        if any(char.isdigit() for char in campo):
+            raise Exception("El nombre/apellido no puede tener dígitos.")
+
+
+class AppMaraton(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Registro de Equipo Maratón de Programación")
+        self.geometry("450x450")
+        
+        # Variables
+        self.equipo = None
+        self.nombre_equipo_var = tk.StringVar()
+        self.universidad_var = tk.StringVar()
+        self.lenguaje_var = tk.StringVar()
+        self.prog_nombre_var = tk.StringVar()
+        self.prog_apellido_var = tk.StringVar()
+        
+        self.crear_widgets()
+
+    def crear_widgets(self):
+        # Frame de Datos del Equipo
+        equipo_frame = tk.LabelFrame(self, text="Datos del Equipo", padx=10, pady=10)
+        equipo_frame.pack(padx=10, pady=10, fill="x")
+
+        tk.Label(equipo_frame, text="Nombre Equipo:").grid(row=0, column=0, sticky="w", padx=5, pady=5)
+        tk.Entry(equipo_frame, textvariable=self.nombre_equipo_var).grid(row=0, column=1, padx=5, pady=5)
+        
+        tk.Label(equipo_frame, text="Universidad:").grid(row=1, column=0, sticky="w", padx=5, pady=5)
+        tk.Entry(equipo_frame, textvariable=self.universidad_var).grid(row=1, column=1, padx=5, pady=5)
+        
+        tk.Label(equipo_frame, text="Lenguaje:").grid(row=2, column=0, sticky="w", padx=5, pady=5)
+        tk.Entry(equipo_frame, textvariable=self.lenguaje_var).grid(row=2, column=1, padx=5, pady=5)
+        
+        tk.Button(equipo_frame, text="Crear Equipo", command=self.crear_equipo).grid(row=3, column=0, columnspan=2, pady=10)
+
+       
+        self.prog_frame = tk.LabelFrame(self, text="Agregar Programador", padx=10, pady=10, fg="gray")
+        self.prog_frame.pack(padx=10, pady=5, fill="x")
+
+        tk.Label(self.prog_frame, text="Nombre Prog.:").grid(row=0, column=0, sticky="w", padx=5, pady=5)
+        self.entry_nombre_prog = tk.Entry(self.prog_frame, textvariable=self.prog_nombre_var)
+        self.entry_nombre_prog.grid(row=0, column=1, padx=5, pady=5)
+        
+        tk.Label(self.prog_frame, text="Apellido Prog.:").grid(row=1, column=0, sticky="w", padx=5, pady=5)
+        self.entry_apellido_prog = tk.Entry(self.prog_frame, textvariable=self.prog_apellido_var)
+        self.entry_apellido_prog.grid(row=1, column=1, padx=5, pady=5)
+        
+        self.btn_agregar = tk.Button(self.prog_frame, text="Añadir Programador", command=self.agregar_programador)
+        self.btn_agregar.grid(row=2, column=0, columnspan=2, pady=10)
+        
+       
+        self.estado_var = tk.StringVar()
+        self.estado_label = tk.Label(self, textvariable=self.estado_var, relief=tk.SUNKEN, anchor="w")
+        self.estado_label.pack(side=tk.BOTTOM, fill="x")
+        self.actualizar_estado("Esperando la creación del equipo...")
+        
+       
+        self.habilitar_programador_inputs(False)
+
+    def actualizar_estado(self, mensaje, color="black"):
+        """Actualiza el mensaje de estado en la parte inferior de la ventana."""
+        self.estado_var.set(mensaje)
+        self.estado_label.config(fg=color)
+
+    def habilitar_programador_inputs(self, habilitar):
+        """Habilita o deshabilita los campos de programador."""
+        estado = tk.NORMAL if habilitar else tk.DISABLED
+        color = "black" if habilitar else "gray"
+        self.prog_frame.config(fg=color)
+        self.entry_nombre_prog.config(state=estado)
+        self.entry_apellido_prog.config(state=estado)
+        self.btn_agregar.config(state=estado)
+
+    def crear_equipo(self):
+        """Inicializa el objeto EquipoMaratonProgramacion."""
+        nombre = self.nombre_equipo_var.get()
+        uni = self.universidad_var.get()
+        leng = self.lenguaje_var.get()
+        
+        if not all([nombre, uni, leng]):
+            messagebox.showwarning("Advertencia", "Por favor, complete todos los campos del equipo.")
+            return
+
+        try:
+            self.equipo = EquipoMaratonProgramacion(nombre, uni, leng)
+            self.actualizar_estado(f"Equipo '{nombre}' creado. Agregue integrantes (0/{EquipoMaratonProgramacion.MAX_TAMANO})", "green")
+            self.habilitar_programador_inputs(True)
+        except Exception as e:
+            messagebox.showerror("Error de Creación", str(e))
+
+    def agregar_programador(self):
+        """
+        Gestiona la adición de un programador con validación y manejo de excepciones.
+        """
+        if not self.equipo:
+            messagebox.showwarning("Advertencia", "Primero debe crear el equipo.")
+            return
+            
+        nombre = self.prog_nombre_var.get()
+        apellido = self.prog_apellido_var.get()
+
+        if not all([nombre, apellido]):
+            messagebox.showwarning("Advertencia", "Ingrese el nombre y apellido del programador.")
+            return
+
+        try:
+           
+            self.equipo.validarCampo(nombre)
+            self.equipo.validarCampo(apellido)
+            
+            
+            nuevo_prog = Programador(nombre, apellido)
+            self.equipo.añadir(nuevo_prog)
+            
+            
+            self.prog_nombre_var.set("")
+            self.prog_apellido_var.set("")
+            self.actualizar_estado(f"Programador añadido. Integrantes: ({self.equipo.tamañoEquipo}/{self.equipo.MAX_TAMANO})", "blue")
+            
+            if self.equipo.estáLleno():
+                self.actualizar_estado(f"¡Equipo completo! (Max: {self.equipo.MAX_TAMANO}).", "red")
+                self.habilitar_programador_inputs(False)
+
+        except Exception as e:
+           
+            messagebox.showerror("Error de Validación/Límite", str(e))
+            self.actualizar_estado(f"Error al añadir programador: {e}", "red")
+
+# Ejecución de la aplicación
+if __name__ == "__main__":
+    app = AppMaraton()
+    app.mainloop()
